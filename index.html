@@ -30,15 +30,14 @@ body{background:var(--negro);color:var(--hueso);font-family:var(--ff-body);font-
 .tb-btn.ghost{background:transparent;border:1px solid #2A2A2A;color:var(--hueso-dim)}
 .tb-btn.ghost:hover{border-color:var(--laton);color:var(--hueso)}
 .tb-btn.primary{background:var(--laton);color:var(--negro)}
-.tb-btn.primary:hover{background:#D4A24A}
 
 /* NAVEGACIÓN */
-.nav-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 24px;gap:24px;position:sticky;top:54px;z-index:90}
-.ntab{font-family:var(--ff-disp);font-size:13px;letter-spacing:.15em;text-transform:uppercase;padding:12px 0;cursor:pointer;color:var(--ceniza);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
+.nav-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 20px;gap:16px;position:sticky;top:54px;z-index:90;overflow-x:auto}
+.ntab{font-family:var(--ff-disp);font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:12px 0;cursor:pointer;color:var(--ceniza);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;white-space:nowrap}
 .ntab:hover{color:var(--hueso)}
 .ntab.act{color:var(--laton);border-bottom-color:var(--laton)}
 
-/* VISTAS Y LAYOUT CON SIDEBAR COLAPSIBLE */
+/* VISTAS Y LAYOUT */
 .view{display:none;flex:1}
 .view.act{display:flex;flex:1;min-height:0}
 .layout{display:flex;flex:1;min-height:0;width:100%;position:relative}
@@ -164,7 +163,7 @@ select option{background:#0a0a0a}
 .sig-name{font-family:var(--ff-disp);font-size:20px;letter-spacing:.08em;color:var(--doc-text)}
 .sig-handle{font-size:12px;color:var(--laton)}
 
-/* FILAMENTOS */
+/* FILAMENTOS Y TARIFAS */
 .fil-container{width:100%;max-width:1000px;margin:0 auto}
 .fil-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:20px}
 .fil-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
@@ -184,7 +183,7 @@ select option{background:#0a0a0a}
   .view{display:block!important;padding:0!important}
   .content-area{padding:0!important;background:white!important}
   .container-box,.fil-container{max-width:100%!important}
-  #v-quoter,#v-filaments{display:none!important}
+  #v-quoter,#v-filaments,#v-rates{display:none!important}
   .document{box-shadow:none!important;width:100%!important;margin:0!important}
   .td-price input,.td-qty input,.editable{border-bottom:none!important;background:transparent!important}
   .doc-table th{-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#FFF!important;background:#1A1A1A!important}
@@ -200,7 +199,7 @@ select option{background:#0a0a0a}
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="tb-left">
-    <button class="menu-toggle" onclick="toggleSidebar()" title="Alternar menú">☰</button>
+    <button class="menu-toggle" onclick="toggleSidebar()" title="Menú">☰</button>
     <div class="tb-brand">MX.SEIS <span>Laboratorio</span></div>
   </div>
   <div class="tb-actions">
@@ -210,11 +209,12 @@ select option{background:#0a0a0a}
   </div>
 </div>
 
-<!-- NAVEGACIÓN -->
+<!-- NAVEGACIÓN DE 4 PESTAÑAS -->
 <nav class="nav-tabs">
   <div class="ntab act" onclick="switchTab('quoter')">🖩 1. Cotizador</div>
   <div class="ntab" onclick="switchTab('quoteDoc')">📄 2. Documento</div>
   <div class="ntab" onclick="switchTab('filaments')">🎨 3. Filamentos</div>
+  <div class="ntab" onclick="switchTab('rates')">⚙️ 4. Tarifas & Costos</div>
 </nav>
 
 <!-- PESTAÑA 1: COTIZADOR -->
@@ -452,10 +452,44 @@ select option{background:#0a0a0a}
   </div>
 </div>
 
+<!-- PESTAÑA 4: TARIFAS & COSTOS GLOBALES -->
+<div id="v-rates" class="view">
+  <div class="content-area" style="width:100%">
+    <div class="container-box">
+      <div class="panel">
+        <div class="panel-title">Tarifas Base de Materiales ($ / gramo)</div>
+        <div class="fg">
+          <div class="f"><label>Costo PLA ($/g)</label><input type="number" id="r-pla" step="0.01" oninput="saveRates()"></div>
+          <div class="f"><label>Costo PETG ($/g)</label><input type="number" id="r-petg" step="0.01" oninput="saveRates()"></div>
+          <div class="f"><label>Costo TPU ($/g)</label><input type="number" id="r-tpu" step="0.01" oninput="saveRates()"></div>
+          <div class="f"><label>Costo ASA ($/g)</label><input type="number" id="r-asa" step="0.01" oninput="saveRates()"></div>
+          <div class="f"><label>Costo ABS ($/g)</label><input type="number" id="r-abs" step="0.01" oninput="saveRates()"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Costos Operativos y Márgenes</div>
+        <div class="fg">
+          <div class="f"><label>Electricidad ($ / hora)</label><input type="number" id="r-elec" step="0.01" oninput="saveRates()"></div>
+          <div class="f"><label>Tiempo de Máquina ($ / hora)</label><input type="number" id="r-time" step="0.01" oninput="saveRates()"></div>
+          <div class="f"><label>Costos Fijos / Depreciación ($)</label><input type="number" id="r-fix" step="1" oninput="saveRates()"></div>
+          <div class="f"><label>Bolsa Transparente ($)</label><input type="number" id="r-bag" step="0.50" oninput="saveRates()"></div>
+          <div class="f"><label>Margen de Utilidad Deseado (%)</label><input type="number" id="r-margin" step="1" oninput="saveRates()"></div>
+          <div class="f"><label>Comisión Terminal / Pago (%)</label><input type="number" id="r-term" step="0.01" oninput="saveRates()"></div>
+          <div class="f"><label>Factor de Precio Máximo</label><input type="number" id="r-mfact" step="0.05" oninput="saveRates()"></div>
+        </div>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn btn-p" onclick="resetRates()">🔄 Restaurar Tarifas Originales</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── CONFIGURACIÓN SUPABASE ────────────────────────────────
-const SUPABASE_URL = 'PEGAR_AQUI_TU_PROJECT_URL';
-const SUPABASE_KEY = 'PEGAR_AQUI_TU_ANON_KEY';
+const SUPABASE_URL = 'https://xygubdfolvrkfbbqmyjb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QlhduxEElequeTlB3D3E9Q_OIHlxIJ9';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DR = {pla:0.40, petg:0.45, tpu:0.65, asa:0.55, abs:0.45, elec:0.15, time:6.60, fix:20, bag:1.50, margin:35, term:4.06, mfact:1.20};
@@ -479,6 +513,8 @@ function toggleSidebar(){
 
 // ── INICIALIZACIÓN ────────────────────────────────────────
 (function init(){
+  try{ const savedR = JSON.parse(localStorage.getItem('mxseis_rates')); if(savedR) R = {...DR, ...savedR}; }catch{}
+  loadRatesToUI();
   loadInitialData();
   calc();
 })();
@@ -551,9 +587,39 @@ function switchTab(tab){
     document.getElementById('v-filaments').classList.add('act');
     document.querySelectorAll('.ntab')[2].classList.add('act');
     renderFilaments();
+  } else if(tab==='rates'){
+    document.getElementById('v-rates').classList.add('act');
+    document.querySelectorAll('.ntab')[3].classList.add('act');
+    loadRatesToUI();
   }
 }
 
+// ── GESTIÓN DE TARIFAS GLOBALES ───────────────────────────
+function loadRatesToUI(){
+  for(let k in DR){
+    const el = document.getElementById('r-' + k);
+    if(el) el.value = R[k] !== undefined ? R[k] : DR[k];
+  }
+}
+
+function saveRates(){
+  for(let k in DR){
+    const el = document.getElementById('r-' + k);
+    if(el) R[k] = parseFloat(el.value) || 0;
+  }
+  try{ localStorage.setItem('mxseis_rates', JSON.stringify(R)); }catch{}
+  calc();
+}
+
+function resetRates(){
+  R = {...DR};
+  loadRatesToUI();
+  try{ localStorage.removeItem('mxseis_rates'); }catch{}
+  calc();
+  toast('Tarifas restauradas', 'ok');
+}
+
+// ── CÁLCULOS ──────────────────────────────────────────────
 function compute(p){
   const w = p.weight||0, t = p.time||0, mat = p.material||'pla', q = p.qty||1;
   const rateMat = R[mat.toLowerCase()] || R.pla;
@@ -683,10 +749,17 @@ function renderProdList(filter=''){
 }
 function filterProds(v){ renderProdList(v); }
 
+// CORRECCIÓN DEL BUG DE SALTO EN BLANCO A COTIZACIÓN FORMAL
 function addPartToQuote(){
   const p = getFormProd();
   if(!p.name){ toast('Asigna un nombre','err'); return; }
   const r = compute(p);
+  
+  // Si no hay una cotización activa cargada, creamos una nueva de inmediato
+  if(!currentQuoteId || !quoteDocs.find(q => q.id === currentQuoteId)){
+    newQuoteDoc();
+  }
+
   docItems.push({ desc: `${p.name} (${p.material.toUpperCase()}, ${p.weight}g)`, precio: r.midPP, cantidad: p.qty });
   toast('✓ Agregado a cotización', 'ok');
   switchTab('quoteDoc');
@@ -768,6 +841,7 @@ function newQuoteDoc(){
     payNombre: 'Israel Reyes García', payCuenta: '638180010190702419', payBanco: 'NU',
     contactEmail: 'seisprintlab@gmail.com', contactPhone: '5657 82 2087'
   };
+  quoteDocs.unshift(q);
   objToQuote(q);
   renderQuoteListSidebar();
 }
@@ -778,6 +852,7 @@ function duplicateQuoteDoc(){
   const numero = nextQuoteNumber();
   currentQuoteId = newId;
   const q = { ...src, id: newId, numero: numero, fecha: todayStr() };
+  quoteDocs.unshift(q);
   objToQuote(q);
   saveCurrentQuote();
 }
@@ -952,7 +1027,7 @@ async function deleteFil(id){
 }
 
 function exportBackup(){
-  const data = { prods, quoteDocs, filaments };
+  const data = { prods, quoteDocs, filaments, rates: R };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -972,6 +1047,7 @@ function importBackup(e){
       if(d.prods) await _supabase.from('productos').upsert(d.prods.map(p=>({id:p.id,name:p.name,material:p.material,weight:p.weight,time:p.time,qty:p.qty,bag_type:p.bagType,bags:p.bags,extra_cost:p.extraCost,extra_qty:p.extraQty,link:p.link})));
       if(d.quoteDocs) await _supabase.from('cotizaciones').upsert(d.quoteDocs.map(q=>({id:q.id,numero:q.numero,fecha:q.fecha,cliente:q.cliente,contacto:q.contacto,proyecto:q.proyecto,items:q.items,fotos:q.fotos,pay_nombre:q.payNombre,pay_cuenta:q.payCuenta,pay_banco:q.payBanco,contact_email:q.contactEmail,contact_phone:q.contactPhone})));
       if(d.filaments) await _supabase.from('filamentos').upsert(d.filaments);
+      if(d.rates){ R = {...DR, ...d.rates}; loadRatesToUI(); try{localStorage.setItem('mxseis_rates', JSON.stringify(R));}catch{} }
       await loadInitialData();
       toast('✓ Importado con éxito', 'ok');
     } catch(err){ toast('Error al procesar archivo', 'err'); }
