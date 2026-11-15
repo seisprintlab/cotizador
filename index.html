@@ -1,9 +1,11 @@
 <!doctype html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MX.SEIS — Sistema Integral de Gestión & Catálogo</title>
+<!-- SDK OFICIAL DE SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:ital,wght@0,200;0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -16,7 +18,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--negro);color:var(--hueso);font-family:var(--ff-body);font-weight:300;min-height:100vh;display:flex;flex-direction:column}
 
-/* ─── TOPBAR ─────────────────────────────────────────────── */
+/* TOPBAR */
 .topbar{background:var(--negro);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .tb-brand{font-family:var(--ff-disp);font-size:22px;letter-spacing:.2em;color:var(--laton)}
 .tb-brand span{font-size:11px;letter-spacing:.15em;color:var(--ceniza);margin-left:10px;font-family:var(--ff-body);font-weight:300;vertical-align:middle}
@@ -26,19 +28,16 @@ body{background:var(--negro);color:var(--hueso);font-family:var(--ff-body);font-
 .tb-btn.ghost:hover{border-color:var(--laton);color:var(--hueso)}
 .tb-btn.primary{background:var(--laton);color:var(--negro)}
 .tb-btn.primary:hover{background:#D4A24A}
-.tb-btn.danger{background:transparent;border:1px solid transparent;color:#6B2A2A}
-.tb-btn.danger:hover{border-color:var(--granate);color:var(--granate)}
 
-/* ─── NAVEGACIÓN PRINCIPAL ───────────────────────────────── */
+/* NAVEGACIÓN */
 .nav-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 24px;gap:24px;position:sticky;top:54px;z-index:90}
 .ntab{font-family:var(--ff-disp);font-size:13px;letter-spacing:.15em;text-transform:uppercase;padding:12px 0;cursor:pointer;color:var(--ceniza);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
 .ntab:hover{color:var(--hueso)}
 .ntab.act{color:var(--laton);border-bottom-color:var(--laton)}
 
-/* ─── LAYOUTS Y VISTAS ───────────────────────────────────── */
+/* VISTAS */
 .view{display:none;flex:1}
 .view.act{display:flex;flex:1;min-height:0}
-
 .layout{display:flex;flex:1;min-height:0;width:100%}
 .sidebar{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .sb-head{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
@@ -56,11 +55,9 @@ body{background:var(--negro);color:var(--hueso);font-family:var(--ff-body);font-
 .sb-total{font-size:11px;color:var(--hueso-dim);margin-top:2px}
 .sb-empty{text-align:center;padding:28px 12px;color:var(--ceniza);font-size:12px}
 
-/* CONTENT AREA */
 .content-area{flex:1;overflow-y:auto;padding:32px;background:#080808;display:flex;flex-direction:column;align-items:center}
 .container-box{width:100%;max-width:860px}
 
-/* PANELS & FORMULARIOS */
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:20px}
 .panel-title{font-family:var(--ff-disp);font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--hueso);margin-bottom:18px;display:flex;align-items:center;gap:10px}
 .panel-title::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -73,7 +70,6 @@ input:focus,select:focus{border-color:var(--laton)}
 input[type=number]{font-family:monospace}
 select option{background:#0a0a0a}
 
-/* BOTONES */
 .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border:none;border-radius:4px;cursor:pointer;font-family:var(--ff-body);font-size:13px;font-weight:500;transition:.15s;text-decoration:none}
 .btn-p{background:var(--laton);color:var(--negro);font-family:var(--ff-disp);letter-spacing:.1em}
@@ -83,7 +79,6 @@ select option{background:#0a0a0a}
 .btn-d{background:transparent;color:var(--red);border:1px solid transparent}
 .btn-d:hover{background:rgba(235,87,87,.1);border-color:var(--red)}
 
-/* RESULTADOS COTIZADOR */
 .res{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-top:20px;width:100%}
 .res-hdr{background:#141414;padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .cbr{padding:14px 20px}
@@ -101,7 +96,7 @@ select option{background:#0a0a0a}
 .pc-amt.rec{color:var(--laton)}
 .pc-sub{font-size:10px;color:var(--ceniza);margin-top:2px}
 
-/* ─── DOCUMENTO DE COTIZACIÓN ────────────────────────────── */
+/* DOCUMENTO DE COTIZACIÓN */
 .document{width:760px;background:var(--doc-bg);box-shadow:0 8px 48px rgba(0,0,0,.6);font-family:var(--ff-body);color:var(--doc-text)}
 .doc-header{background:var(--doc-header);padding:28px 36px;display:flex;justify-content:space-between;align-items:flex-start}
 .doc-logo{font-family:var(--ff-disp);font-size:54px;letter-spacing:.06em;color:#FFFFFF;line-height:1}
@@ -118,7 +113,6 @@ select option{background:#0a0a0a}
 .editable:focus{border-bottom-color:var(--laton);background:rgba(196,145,58,.04)}
 .editable.large{font-size:15px;font-weight:400}
 
-/* TABLA DOCUMENTO */
 .doc-table{width:100%;border-collapse:collapse;margin-bottom:0;font-size:13px}
 .doc-table thead tr{background:#1A1A1A}
 .doc-table th{padding:10px 12px;text-align:left;font-family:var(--ff-disp);font-size:10px;letter-spacing:.15em;font-weight:400;color:#AAAAAA}
@@ -137,7 +131,6 @@ select option{background:#0a0a0a}
 .total-lbl{font-family:var(--ff-disp);font-size:14px;letter-spacing:.2em;color:#AAAAAA}
 .total-amt{font-family:var(--ff-disp);font-size:28px;letter-spacing:.04em;color:#FFFFFF;min-width:140px;text-align:right}
 
-/* FOTOS COTIZACIÓN */
 .doc-photos{padding:20px 0 8px;display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;border-top:1px solid #D0C8BC;margin-top:24px;user-select:none}
 .photo-slot{position:relative;border-radius:50%;overflow:hidden;border:2px solid #D0C8BC;background:#E8E4DC;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .photo-slot.sz-s{width:60px;height:60px}
@@ -153,7 +146,6 @@ select option{background:#0a0a0a}
 .add-slot-btn{width:60px;height:60px;border-radius:50%;border:2px dashed #C0B8B0;background:transparent;color:#AAA;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
 .add-slot-btn:hover{border-color:var(--laton);color:var(--laton)}
 
-/* PIE COTIZACIÓN */
 .doc-footer{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:28px;padding-top:20px;border-top:1px solid #D0C8BC;align-items:start}
 .footer-col{font-size:12px;color:#555;line-height:1.9}
 .footer-col strong{color:var(--doc-text);font-weight:600;display:block;margin-bottom:2px}
@@ -162,7 +154,7 @@ select option{background:#0a0a0a}
 .sig-name{font-family:var(--ff-disp);font-size:22px;letter-spacing:.08em;color:var(--doc-text)}
 .sig-handle{font-size:12px;color:var(--laton)}
 
-/* ─── CATÁLOGO DE FILAMENTOS (PESTAÑA 3) ─────────────────── */
+/* FILAMENTOS */
 .fil-container{width:100%;max-width:1000px;margin:0 auto}
 .fil-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;margin-top:20px}
 .fil-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
@@ -171,13 +163,11 @@ select option{background:#0a0a0a}
 .fil-name{font-family:var(--ff-disp);font-size:16px;letter-spacing:.08em;color:var(--hueso)}
 .fil-brand{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--ceniza)}
 
-/* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:3px;padding:12px 20px;font-size:12px;z-index:500;transform:translateY(60px);opacity:0;transition:.2s;pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.ok{border-left:3px solid var(--laton)}
 .toast.err{border-left:3px solid var(--granate)}
 
-/* ─── PRINT MODO IMPRESIÓN LIMPIO ────────────────────────── */
 @media print{
   body{background:white!important}
   .topbar,.nav-tabs,.sidebar,.btn-row,.add-row-bar,.btn-del-row,.toast,.slot-controls,.add-slot-btn{display:none!important}
@@ -207,14 +197,14 @@ select option{background:#0a0a0a}
   </div>
 </div>
 
-<!-- NAVEGACIÓN DE TRES PESTAÑAS -->
+<!-- NAVEGACIÓN -->
 <nav class="nav-tabs">
   <div class="ntab act" onclick="switchTab('quoter')">🖩 1. Cotizador & Costos</div>
   <div class="ntab" onclick="switchTab('quoteDoc')">📄 2. Cotización Formal</div>
   <div class="ntab" onclick="switchTab('filaments')">🎨 3. Catálogo Filamentos</div>
 </nav>
 
-<!-- ── PESTAÑA 1: COTIZADOR & COSTOS ── -->
+<!-- PESTAÑA 1: COTIZADOR -->
 <div id="v-quoter" class="view act">
   <div class="layout">
     <aside class="sidebar">
@@ -318,7 +308,7 @@ select option{background:#0a0a0a}
   </div>
 </div>
 
-<!-- ── PESTAÑA 2: COTIZACIÓN FORMAL ── -->
+<!-- PESTAÑA 2: COTIZACIÓN FORMAL -->
 <div id="v-quoteDoc" class="view">
   <div class="layout">
     <aside class="sidebar">
@@ -334,7 +324,7 @@ select option{background:#0a0a0a}
         <button class="btn btn-p" onclick="saveCurrentQuote()">💾 Guardar Cotización</button>
         <button class="btn btn-s" onclick="duplicateQuoteDoc()">Duplicar</button>
         <button class="btn btn-d" onclick="deleteCurrentQuoteDoc()">Eliminar</button>
-        <button class="btn btn-s" onclick="window.print()">⎙ Imprimir PDF</button>
+        <button class="btn btn-s" onclick="window.print()">Print PDF</button>
       </div>
 
       <div class="document" id="document">
@@ -431,7 +421,7 @@ select option{background:#0a0a0a}
   </div>
 </div>
 
-<!-- ── PESTAÑA 3: CATÁLOGO DE FILAMENTOS ── -->
+<!-- PESTAÑA 3: CATÁLOGO DE FILAMENTOS -->
 <div id="v-filaments" class="view">
   <div class="content-area" style="width:100%">
     <div class="fil-container">
@@ -442,52 +432,91 @@ select option{background:#0a0a0a}
         </div>
         <button class="btn btn-p" onclick="addFilament()">+ Agregar Muestra</button>
       </div>
-
       <div class="fil-grid" id="filGrid"></div>
     </div>
   </div>
 </div>
 
 <script>
-/* ─── ESTADO Y TARIFAS ───────────────────────────────────── */
-const STORAGE_PRODS = 'mxseis_prods_v2';
-const STORAGE_QUOTES = 'mxseis_quotes_doc_v1';
-const STORAGE_FILS = 'mxseis_filaments_v1';
+// ── CONFIGURACIÓN SUPABASE ────────────────────────────────
+const SUPABASE_URL = 'PEGAR_AQUI_TU_PROJECT_URL';
+const SUPABASE_KEY = 'PEGAR_AQUI_TU_ANON_KEY';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// TARIFAS DE COSTO POR DEFECTO
 const DR = {pla:0.40, petg:0.45, tpu:0.65, asa:0.55, abs:0.45, elec:0.15, time:6.60, fix:20, bag:1.50, margin:35, term:4.06, mfact:1.20};
 let R = {...DR};
 
+// ESTADO GLOBAL
 let prods = [];
 let curProdId = null;
-
 let quoteDocs = [];
 let currentQuoteId = null;
 let docItems = [{desc:'', precio:0, cantidad:1}];
 let currentPhotos = [{src:'', x:50, y:50, size:'m'}, {src:'', x:50, y:50, size:'m'}];
+let filaments = [];
 
-let filaments = [
-  {id:'f1', brand:'Mexico Makers', color:'Rojo Noche Buena', type:'PLA', img:''},
-  {id:'f2', brand:'Sunlu', color:'Blanco Marble', type:'PLA', img:''}
-];
-
-/* ─── INICIO ─────────────────────────────────────────────── */
+// ── INICIALIZACIÓN Y SUSCRIPCIÓN EN TIEMPO REAL ──────────
 (function init(){
-  try{ prods = JSON.parse(localStorage.getItem(STORAGE_PRODS)) || []; }catch{ prods=[]; }
-  try{ quoteDocs = JSON.parse(localStorage.getItem(STORAGE_QUOTES)) || []; }catch{ quoteDocs=[]; }
-  try{ const savedF = JSON.parse(localStorage.getItem(STORAGE_FILS)); if(savedF) filaments = savedF; }catch{}
-  
-  renderProdList();
-  
-  if(quoteDocs.length){
-    loadQuoteDoc(quoteDocs[0].id);
-  } else {
-    newQuoteDoc();
-  }
-  renderQuoteListSidebar();
-  renderFilaments();
+  loadInitialData();
   calc();
 })();
 
+async function loadInitialData() {
+  await Promise.all([fetchProductos(), fetchCotizaciones(), fetchFilamentos()]);
+  initRealtimeSync();
+}
+
+function initRealtimeSync() {
+  _supabase.channel('rt_prods')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'productos' }, async () => { await fetchProductos(); })
+    .subscribe();
+
+  _supabase.channel('rt_quotes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'cotizaciones' }, async () => { await fetchCotizaciones(); })
+    .subscribe();
+
+  _supabase.channel('rt_fils')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'filamentos' }, async () => { await fetchFilamentos(); })
+    .subscribe();
+}
+
+// ── FETCH DESDE SUPABASE ─────────────────────────────────
+async function fetchProductos() {
+  const { data, error } = await _supabase.from('productos').select('*').order('created_at', { ascending: false });
+  if(!error && data) {
+    prods = data.map(d => ({
+      id: d.id, name: d.name, material: d.material, weight: d.weight, time: d.time,
+      qty: d.qty, bagType: d.bag_type, bags: d.bags, extraCost: d.extra_cost, extraQty: d.extra_qty, link: d.link
+    }));
+    renderProdList();
+  }
+}
+
+async function fetchCotizaciones() {
+  const { data, error } = await _supabase.from('cotizaciones').select('*').order('created_at', { ascending: false });
+  if(!error && data) {
+    quoteDocs = data.map(d => ({
+      id: d.id, numero: d.numero, fecha: d.fecha, cliente: d.cliente, contacto: d.contacto,
+      proyecto: d.proyecto, items: d.items, fotos: d.fotos, payNombre: d.pay_nombre,
+      payCuenta: d.pay_cuenta, payBanco: d.pay_banco, contactEmail: d.contact_email, contactPhone: d.contact_phone
+    }));
+    renderQuoteListSidebar();
+    if(quoteDocs.length && !currentQuoteId) loadQuoteDoc(quoteDocs[0].id);
+  } else if(!quoteDocs.length) {
+    newQuoteDoc();
+  }
+}
+
+async function fetchFilamentos() {
+  const { data, error } = await _supabase.from('filamentos').select('*').order('created_at', { ascending: false });
+  if(!error && data) {
+    filaments = data;
+    renderFilaments();
+  }
+}
+
+// ── NAVEGACIÓN Y TABS ────────────────────────────────────
 function switchTab(tab){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('act'));
   document.querySelectorAll('.ntab').forEach(n => n.classList.remove('act'));
@@ -506,7 +535,7 @@ function switchTab(tab){
   }
 }
 
-/* ─── CÁLCULOS COTIZADOR ─────────────────────────────────── */
+// ── CÁLCULOS DEL COTIZADOR ───────────────────────────────
 function compute(p){
   const w = p.weight||0, t = p.time||0, mat = p.material||'pla', q = p.qty||1;
   const rateMat = R[mat.toLowerCase()] || R.pla;
@@ -564,22 +593,26 @@ function calc(){
   }
 }
 
-/* ─── GESTIÓN DE PRODUCTOS ───────────────────────────────── */
-function saveProd(){
+// ── PRODUCTOS (SUPABASE UPSERT/DELETE) ───────────────────
+async function saveProd(){
   const p = getFormProd();
   if(!p.name){ toast('Ingresa el nombre del producto','err'); return; }
-  const item = { id: curProdId || 'p_' + Date.now(), ...p, ts: new Date().toISOString() };
-  if(curProdId){
-    const idx = prods.findIndex(x => x.id === curProdId);
-    if(idx>=0) prods[idx] = item; else prods.unshift(item);
-  } else {
-    prods.unshift(item);
-    curProdId = item.id;
+  
+  const payload = {
+    id: curProdId || 'p_' + Date.now(),
+    name: p.name, material: p.material, weight: p.weight, time: p.time,
+    qty: p.qty, bag_type: p.bagType, bags: p.bags, extra_cost: p.extraCost,
+    extra_qty: p.extraQty, link: p.link
+  };
+
+  const { error } = await _supabase.from('productos').upsert(payload);
+  if(error) { toast('Error al guardar en Supabase','err'); console.error(error); }
+  else {
+    curProdId = payload.id;
+    toast('✓ Producto guardado en tiempo real', 'ok');
+    document.getElementById('delBtn').style.display = 'inline-flex';
+    fetchProductos();
   }
-  try{ localStorage.setItem(STORAGE_PRODS, JSON.stringify(prods)); }catch{}
-  renderProdList();
-  toast('✓ Producto guardado en catálogo', 'ok');
-  document.getElementById('delBtn').style.display = 'inline-flex';
 }
 
 function loadProd(id){
@@ -609,18 +642,21 @@ function newProd(){
   document.getElementById('q-bags').value = '0';
   document.getElementById('q-eq').value = '0';
   document.getElementById('delBtn').style.display = 'none';
-  document.querySelectorAll('.sb-item').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('#prodList .sb-item').forEach(e => e.classList.remove('active'));
   calc();
 }
 
-function deleteProd(){
+async function deleteProd(){
   if(!curProdId) return;
   if(!confirm('¿Eliminar producto del catálogo?')) return;
-  prods = prods.filter(x => x.id !== curProdId);
-  try{ localStorage.setItem(STORAGE_PRODS, JSON.stringify(prods)); }catch{}
-  newProd();
-  renderProdList();
-  toast('Producto eliminado', 'ok');
+  const { error } = await _supabase.from('productos').delete().eq('id', curProdId);
+  if(!error){
+    newProd();
+    fetchProductos();
+    toast('Producto eliminado', 'ok');
+  } else {
+    toast('Error al eliminar', 'err');
+  }
 }
 
 function renderProdList(filter=''){
@@ -641,27 +677,21 @@ function renderProdList(filter=''){
 }
 function filterProds(v){ renderProdList(v); }
 
-/* ─── PUENTE COTIZADOR -> COTIZACIÓN FORMAL ──────────────── */
 function addPartToQuote(){
   const p = getFormProd();
   if(!p.name){ toast('Asigna un nombre al producto','err'); return; }
   const r = compute(p);
-  
   docItems.push({
     desc: `${p.name} (${p.material.toUpperCase()}, ${p.weight}g, ${p.time}h)`,
-    precio: r.midPP,
-    cantidad: p.qty
+    precio: r.midPP, cantidad: p.qty
   });
-  
   toast('✓ Partida agregada a la cotización', 'ok');
   switchTab('quoteDoc');
   renderDocItems();
 }
 
-/* ─── GESTIÓN DE COTIZACIÓN FORMAL ───────────────────────── */
-function todayStr(){
-  return new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-}
+// ── COTIZACIONES FORMALES (SUPABASE) ─────────────────────
+function todayStr(){ return new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'}); }
 
 function nextQuoteNumber(){
   const nums = quoteDocs.map(q => parseInt(q.numero) || 0);
@@ -705,15 +735,21 @@ function objToQuote(q){
   renderPhotos();
 }
 
-function saveCurrentQuote(){
+async function saveCurrentQuote(){
   if(!currentQuoteId) newQuoteDoc();
   const q = quoteToObj();
-  const idx = quoteDocs.findIndex(x => x.id === currentQuoteId);
-  if(idx>=0) quoteDocs[idx] = q; else quoteDocs.unshift(q);
-  
-  try{ localStorage.setItem(STORAGE_QUOTES, JSON.stringify(quoteDocs)); }catch{}
-  renderQuoteListSidebar();
-  toast('✓ Cotización guardada correctamente', 'ok');
+  const payload = {
+    id: q.id, numero: q.numero, fecha: q.fecha, cliente: q.cliente, contacto: q.contacto,
+    proyecto: q.proyecto, items: q.items, fotos: q.fotos, pay_nombre: q.payNombre,
+    pay_cuenta: q.payCuenta, pay_banco: q.payBanco, contact_email: q.contactEmail, contact_phone: q.contactPhone
+  };
+
+  const { error } = await _supabase.from('cotizaciones').upsert(payload);
+  if(error) { toast('Error al sincronizar cotización','err'); console.error(error); }
+  else {
+    toast('✓ Cotización guardada en vivo', 'ok');
+    fetchCotizaciones();
+  }
 }
 
 function loadQuoteDoc(id){
@@ -727,49 +763,38 @@ function newQuoteDoc(){
   currentQuoteId = 'q_' + Date.now();
   const numero = nextQuoteNumber();
   const q = {
-    id: currentQuoteId,
-    numero: numero,
-    fecha: todayStr(),
-    cliente: 'Nombre del cliente',
-    contacto: 'Contacto',
-    proyecto: 'Descripción del proyecto',
+    id: currentQuoteId, numero: numero, fecha: todayStr(), cliente: 'Nombre del cliente',
+    contacto: 'Contacto', proyecto: 'Descripción del proyecto',
     items: [{desc:'', precio:0, cantidad:1}],
     fotos: [{src:'', x:50, y:50, size:'m'}, {src:'', x:50, y:50, size:'m'}],
-    payNombre: 'Israel Reyes García',
-    payCuenta: '638180010190702419',
-    payBanco: 'NU',
-    contactEmail: 'seisprintlab@gmail.com',
-    contactPhone: '5657 82 2087'
+    payNombre: 'Israel Reyes García', payCuenta: '638180010190702419', payBanco: 'NU',
+    contactEmail: 'seisprintlab@gmail.com', contactPhone: '5657 82 2087'
   };
-  quoteDocs.unshift(q);
   objToQuote(q);
-  try{ localStorage.setItem(STORAGE_QUOTES, JSON.stringify(quoteDocs)); }catch{}
   renderQuoteListSidebar();
-  toast('Nueva cotización No. ' + numero, 'ok');
 }
 
 function duplicateQuoteDoc(){
   const src = quoteToObj();
   const newId = 'q_' + Date.now();
   const numero = nextQuoteNumber();
-  const q = { ...src, id: newId, numero: numero, fecha: todayStr() };
   currentQuoteId = newId;
-  quoteDocs.unshift(q);
+  const q = { ...src, id: newId, numero: numero, fecha: todayStr() };
   objToQuote(q);
-  try{ localStorage.setItem(STORAGE_QUOTES, JSON.stringify(quoteDocs)); }catch{}
-  renderQuoteListSidebar();
-  toast('Cotización duplicada — No. ' + numero, 'ok');
+  saveCurrentQuote();
 }
 
-function deleteCurrentQuoteDoc(){
+async function deleteCurrentQuoteDoc(){
   if(!currentQuoteId) return;
   if(!confirm('¿Eliminar esta cotización?')) return;
-  quoteDocs = quoteDocs.filter(x => x.id !== currentQuoteId);
-  try{ localStorage.setItem(STORAGE_QUOTES, JSON.stringify(quoteDocs)); }catch{}
-  if(quoteDocs.length){ loadQuoteDoc(quoteDocs[0].id); }
-  else { newQuoteDoc(); }
-  renderQuoteListSidebar();
-  toast('Cotización eliminada', 'ok');
+  const { error } = await _supabase.from('cotizaciones').delete().eq('id', currentQuoteId);
+  if(!error){
+    currentQuoteId = null;
+    await fetchCotizaciones();
+    toast('Cotización eliminada', 'ok');
+  } else {
+    toast('Error al eliminar', 'err');
+  }
 }
 
 function renderQuoteListSidebar(){
@@ -788,7 +813,6 @@ function renderQuoteListSidebar(){
   }).join('');
 }
 
-/* ─── TABLA DE ITEMS EN COTIZACIÓN ───────────────────────── */
 function renderDocItems(){
   const tbody = document.getElementById('itemsBody');
   tbody.innerHTML = '';
@@ -812,18 +836,9 @@ function calcGrandTotal(){
   document.getElementById('grandTotal').textContent = '$' + total.toFixed(2);
 }
 
-function addEmptyRow(){
-  docItems.push({desc:'', precio:0, cantidad:1});
-  renderDocItems();
-}
+function addEmptyRow(){ docItems.push({desc:'', precio:0, cantidad:1}); renderDocItems(); }
+function removeDocRow(i){ if(docItems.length <= 1){ toast('Mínimo una línea','err'); return; } docItems.splice(i,1); renderDocItems(); }
 
-function removeDocRow(i){
-  if(docItems.length <= 1){ toast('Debe haber al menos una línea','err'); return; }
-  docItems.splice(i,1);
-  renderDocItems();
-}
-
-/* ─── FOTOS EN COTIZACIÓN ────────────────────────────────── */
 function renderPhotos(){
   const sec = document.getElementById('photosSection');
   sec.innerHTML = '';
@@ -895,7 +910,7 @@ function onPhotoFile(e, idx){
 
 function setPhotoSize(e, idx, sz){ e.stopPropagation(); currentPhotos[idx].size = sz; renderPhotos(); }
 
-/* ─── CATÁLOGO DE FILAMENTOS (PESTAÑA 3) ─────────────────── */
+// ── CATÁLOGO DE FILAMENTOS (SUPABASE) ────────────────────
 function renderFilaments(){
   const grid = document.getElementById('filGrid');
   grid.innerHTML = filaments.map(f => `
@@ -910,17 +925,17 @@ function renderFilaments(){
   `).join('');
 }
 
-function addFilament(){
+async function addFilament(){
   const brand = prompt("Marca del filamento (Ej. Sunlu, Mexico Makers):", "Mexico Makers");
   if(!brand) return;
   const color = prompt("Nombre o tono del color:", "Azul Metálico");
   if(!color) return;
   const type = prompt("Tipo de material (PLA, PETG, TPU, etc.):", "PLA").toUpperCase();
   
-  filaments.push({ id: 'fil_' + Date.now(), brand, color, type, img: '' });
-  saveFilaments();
-  renderFilaments();
-  toast('✓ Muestra de filamento agregada', 'ok');
+  const payload = { id: 'fil_' + Date.now(), brand, color, type, img: '' };
+  const { error } = await _supabase.from('filamentos').upsert(payload);
+  if(!error){ toast('✓ Muestra agregada en tiempo real', 'ok'); fetchFilamentos(); }
+  else { toast('Error al agregar filamento', 'err'); }
 }
 
 function triggerFilUpload(id){
@@ -930,13 +945,12 @@ function triggerFilUpload(id){
   input.onchange = e => {
     const f = e.target.files[0]; if(!f) return;
     const r = new FileReader();
-    r.onload = ev => {
+    r.onload = async ev => {
       const target = filaments.find(x => x.id === id);
       if(target){
         target.img = ev.target.result;
-        saveFilaments();
-        renderFilaments();
-        toast('Foto de filamento actualizada', 'ok');
+        const { error } = await _supabase.from('filamentos').upsert(target);
+        if(!error){ toast('Foto actualizada en tiempo real', 'ok'); fetchFilamentos(); }
       }
     };
     r.readAsDataURL(f);
@@ -944,19 +958,13 @@ function triggerFilUpload(id){
   input.click();
 }
 
-function deleteFil(id){
+async function deleteFil(id){
   if(!confirm('¿Eliminar esta muestra de filamento?')) return;
-  filaments = filaments.filter(x => x.id !== id);
-  saveFilaments();
-  renderFilaments();
-  toast('Muestra eliminada', 'ok');
+  const { error } = await _supabase.from('filamentos').delete().eq('id', id);
+  if(!error){ toast('Muestra eliminada', 'ok'); fetchFilamentos(); }
 }
 
-function saveFilaments(){
-  try{ localStorage.setItem(STORAGE_FILS, JSON.stringify(filaments)); }catch{}
-}
-
-/* ─── IMPORTADOR / EXPORTADOR UNIFICADO (TSV / JSON) ─────── */
+// ── BACKUP / IMPORTADOR (LOCAL & NUBE) ────────────────────
 function exportBackup(){
   const data = { prods, quoteDocs, filaments };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
@@ -972,97 +980,46 @@ function triggerImport(){ document.getElementById('importFile').click(); }
 function importBackup(e){
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
-  r.onload = ev => {
+  r.onload = async ev => {
     const text = ev.target.result.trim();
-    
-    // 1. Intentar cargar como JSON primero
     if(text.startsWith('{') || text.startsWith('[')){
       try{
         const d = JSON.parse(text);
-        if(d.prods) prods = d.prods;
-        else if(Array.isArray(d)) prods = d;
-        
-        if(d.quoteDocs) quoteDocs = d.quoteDocs;
-        if(d.filaments) filaments = d.filaments;
-        
-        saveAllLocal();
-        refreshAllUI();
-        toast('✓ Respaldo JSON cargado con éxito', 'ok');
+        if(d.prods) await _supabase.from('productos').upsert(d.prods.map(p=>({id:p.id,name:p.name,material:p.material,weight:p.weight,time:p.time,qty:p.qty,bag_type:p.bagType,bags:p.bags,extra_cost:p.extraCost,extra_qty:p.extraQty,link:p.link})));
+        if(d.quoteDocs) await _supabase.from('cotizaciones').upsert(d.quoteDocs.map(q=>({id:q.id,numero:q.numero,fecha:q.fecha,cliente:q.cliente,contacto:q.contacto,proyecto:q.proyecto,items:q.items,fotos:q.fotos,pay_nombre:q.payNombre,pay_cuenta:q.payCuenta,pay_banco:q.payBanco,contact_email:q.contactEmail,contact_phone:q.contactPhone})));
+        if(d.filaments) await _supabase.from('filamentos').upsert(d.filaments);
+        await loadInitialData();
+        toast('✓ Datos importados a Supabase', 'ok');
         return;
-      }catch(err){
-        console.error(err);
-      }
+      }catch(err){ console.error(err); }
     }
 
-    // 2. Si no es JSON, procesar como TSV (Valores Separados por Tabuladores del cotizador anterior)
     try {
       const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      if(lines.length < 2){ toast('El archivo TSV está vacío', 'err'); return; }
-
-      let importedCount = 0;
-      // Omitir el encabezado (línea 0) y procesar productos
+      let imported = [];
       for(let i = 1; i < lines.length; i++){
         const cols = lines[i].split('\t').map(c => c.trim());
-        if(cols.length >= 2){
-          const name = cols[0];
-          const mat = cols[1] ? cols[1].toLowerCase() : 'pla';
-          const weight = parseFloat(cols[2]) || 0;
-          const time = parseFloat(cols[3]) || 0;
-          const qty = parseInt(cols[4]) || 1;
-          const link = cols[10] || cols[cols.length-1] || '';
-
-          if(name){
-            prods.push({
-              id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-              name: name,
-              material: mat,
-              weight: weight,
-              time: time,
-              qty: qty,
-              bagType: 'none',
-              bags: 0,
-              extraCost: 0,
-              extraQty: 0,
-              link: link.startsWith('http') ? link : '',
-              ts: new Date().toISOString()
-            });
-            importedCount++;
-          }
+        if(cols.length >= 2 && cols[0]){
+          imported.push({
+            id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            name: cols[0], material: cols[1] ? cols[1].toLowerCase() : 'pla',
+            weight: parseFloat(cols[2]) || 0, time: parseFloat(cols[3]) || 0,
+            qty: parseInt(cols[4]) || 1, bag_type: 'none', bags: 0, extra_cost: 0, extra_qty: 0,
+            link: (cols[10] || cols[cols.length-1] || '').startsWith('http') ? (cols[10] || cols[cols.length-1]) : ''
+          });
         }
       }
-
-      if(importedCount > 0){
-        saveAllLocal();
-        refreshAllUI();
-        toast(`✓ ¡Éxito! Se importaron ${importedCount} productos del TSV`, 'ok');
-      } else {
-        toast('No se pudieron leer productos del archivo TSV', 'err');
+      if(imported.length){
+        await _supabase.from('productos').upsert(imported);
+        await fetchProductos();
+        toast(`✓ ¡Se importaron ${imported.length} productos del TSV a la nube!`, 'ok');
       }
-    } catch(err){
-      console.error(err);
-      toast('Error al procesar el archivo', 'err');
-    }
+    } catch(err){ toast('Error al procesar el archivo', 'err'); }
   };
   r.readAsText(f);
 }
 
-function saveAllLocal(){
-  try{
-    localStorage.setItem(STORAGE_PRODS, JSON.stringify(prods));
-    localStorage.setItem(STORAGE_QUOTES, JSON.stringify(quoteDocs));
-    saveFilaments();
-  }catch(e){}
-}
-
-function refreshAllUI(){
-  renderProdList();
-  renderQuoteListSidebar();
-  renderFilaments();
-  if(quoteDocs.length) loadQuoteDoc(quoteDocs[0].id);
-  if(prods.length) loadProd(prods[0].id);
-}
-
-/* ─── UTILS ──────────────────────────────────────────────── */
+// ── UTILS ────────────────────────────────────────────────
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 let _tt;
 function toast(msg, type='ok'){
