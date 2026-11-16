@@ -31,7 +31,7 @@ body{background:var(--negro);color:var(--hueso);font-family:var(--ff-body);font-
 .tb-btn.ghost:hover{border-color:var(--laton);color:var(--hueso)}
 .tb-btn.primary{background:var(--laton);color:var(--negro)}
 
-/* NAVEGACIÓN */
+/* NAVEGACIÓN DE 4 PESTAÑAS */
 .nav-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 20px;gap:16px;position:sticky;top:54px;z-index:90;overflow-x:auto}
 .ntab{font-family:var(--ff-disp);font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:12px 0;cursor:pointer;color:var(--ceniza);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;white-space:nowrap}
 .ntab:hover{color:var(--hueso)}
@@ -209,7 +209,7 @@ select option{background:#0a0a0a}
   </div>
 </div>
 
-<!-- NAVEGACIÓN DE 4 PESTAÑAS -->
+<!-- NAVEGACIÓN -->
 <nav class="nav-tabs">
   <div class="ntab act" onclick="switchTab('quoter')">🖩 1. Cotizador</div>
   <div class="ntab" onclick="switchTab('quoteDoc')">📄 2. Documento</div>
@@ -422,7 +422,7 @@ select option{background:#0a0a0a}
             <div class="footer-col">
               <strong>Contáctanos:</strong>
               <span contenteditable="true" id="contactEmail" class="editable">seisprintlab@gmail.com</span><br>
-              Tel: <span contenteditable="true" id="contactPhone" class="editable">5657 82 2087</span>
+              Tel: <span contenteditable="true" id="contactPhone" class="editable">5523 19 2113</span>
             </div>
             <div class="footer-col doc-signature">
               <div class="sig-by">Aprobado por</div>
@@ -490,7 +490,7 @@ select option{background:#0a0a0a}
 // ── CONFIGURACIÓN SUPABASE ────────────────────────────────
 const SUPABASE_URL = 'https://xygubdfolvrkfbbqmyjb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QlhduxEElequeTlB3D3E9Q_OIHlxIJ9';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const _supabase = supabase.createClient(https://xygubdfolvrkfbbqmyjb.supabase.co, sb_publishable_QlhduxEElequeTlB3D3E9Q_OIHlxIJ9);
 
 const DR = {pla:0.40, petg:0.45, tpu:0.65, asa:0.55, abs:0.45, elec:0.15, time:6.60, fix:20, bag:1.50, margin:35, term:4.06, mfact:1.20};
 let R = {...DR};
@@ -503,7 +503,6 @@ let docItems = [{desc:'', precio:0, cantidad:1}];
 let currentPhotos = [{src:'', x:50, y:50, size:'m'}, {src:'', x:50, y:50, size:'m'}];
 let filaments = [];
 
-// ── CONTROL DE MENÚ LATERAL (HAMBURGUESA) ─────────────────
 function toggleSidebar(){
   const s1 = document.getElementById('appSidebar');
   const s2 = document.getElementById('appSidebar2');
@@ -511,7 +510,6 @@ function toggleSidebar(){
   if(s2) s2.classList.toggle('collapsed');
 }
 
-// ── INICIALIZACIÓN ────────────────────────────────────────
 (function init(){
   try{ const savedR = JSON.parse(localStorage.getItem('mxseis_rates')); if(savedR) R = {...DR, ...savedR}; }catch{}
   loadRatesToUI();
@@ -594,7 +592,6 @@ function switchTab(tab){
   }
 }
 
-// ── GESTIÓN DE TARIFAS GLOBALES ───────────────────────────
 function loadRatesToUI(){
   for(let k in DR){
     const el = document.getElementById('r-' + k);
@@ -619,18 +616,34 @@ function resetRates(){
   toast('Tarifas restauradas', 'ok');
 }
 
-// ── CÁLCULOS ──────────────────────────────────────────────
 function compute(p){
   const w = p.weight||0, t = p.time||0, mat = p.material||'pla', q = p.qty||1;
-  const rateMat = R[mat.toLowerCase()] || R.pla;
-  const fil = w * rateMat, elec = t * R.elec, tm = t * R.time, fx = R.fix;
-  const bagP = p.bagType==='transparent'?R.bag:p.bagType==='craft'?2:0;
-  const bagT = bagP * (p.bags||0), extT = (p.extraCost||0) * (p.extraQty||0);
-  const sub = fil + elec + tm + fx + bagT + extT, cpp = sub / q;
-  const prof = sub * (R.margin/100), withP = sub + prof;
-  const comm = withP * (R.term/100), base = withP + comm;
-  const minPP = base / q, maxPP = (base * R.mfact)/q, midPP = (minPP + maxPP)/2;
-  const realM = ((midPP - cpp)/midPP)*100;
+  const rateMat = R[mat.toLowerCase()] !== undefined ? R[mat.toLowerCase()] : DR.pla;
+  const fil = w * rateMat;
+  const elec = t * (R.elec !== undefined ? R.elec : DR.elec);
+  const tm = t * (R.time !== undefined ? R.time : DR.time);
+  const fx = R.fix !== undefined ? R.fix : DR.fix;
+  const bagP = p.bagType==='transparent' ? (R.bag !== undefined ? R.bag : DR.bag) : p.bagType==='craft' ? 2 : 0;
+  const bagT = bagP * (p.bags||0);
+  const extT = (p.extraCost||0) * (p.extraQty||0);
+  
+  const sub = fil + elec + tm + fx + bagT + extT;
+  const cpp = q > 0 ? sub / q : 0;
+  
+  const marginVal = R.margin !== undefined ? R.margin : DR.margin;
+  const termVal = R.term !== undefined ? R.term : DR.term;
+  const mfactVal = R.mfact !== undefined ? R.mfact : DR.mfact;
+
+  const prof = sub * (marginVal/100);
+  const withP = sub + prof;
+  const comm = withP * (termVal/100);
+  const base = withP + comm;
+  
+  const minPP = q > 0 ? base / q : 0;
+  const maxPP = q > 0 ? (base * mfactVal)/q : 0;
+  const midPP = (minPP + maxPP)/2;
+  const realM = midPP > 0 ? ((midPP - cpp)/midPP)*100 : 0;
+  
   return {fil, elec, tm, fx, bagT, extT, sub, cpp, minPP, midPP, maxPP, realM};
 }
 
@@ -652,7 +665,7 @@ function getFormProd(){
 function calc(){
   const p = getFormProd();
   const r = compute(p);
-  const f = n => '$' + n.toFixed(2);
+  const f = n => '$' + (isNaN(n) ? '0.00' : n.toFixed(2));
   
   document.getElementById('r-fil').textContent = f(r.fil);
   document.getElementById('r-elec').textContent = f(r.elec);
@@ -749,13 +762,11 @@ function renderProdList(filter=''){
 }
 function filterProds(v){ renderProdList(v); }
 
-// CORRECCIÓN DEL BUG DE SALTO EN BLANCO A COTIZACIÓN FORMAL
 function addPartToQuote(){
   const p = getFormProd();
   if(!p.name){ toast('Asigna un nombre','err'); return; }
   const r = compute(p);
   
-  // Si no hay una cotización activa cargada, creamos una nueva de inmediato
   if(!currentQuoteId || !quoteDocs.find(q => q.id === currentQuoteId)){
     newQuoteDoc();
   }
@@ -1038,18 +1049,92 @@ function exportBackup(){
 
 function triggerImport(){ document.getElementById('importFile').click(); }
 
+/* IMPORTADOR ADAPTATIVO (JSON VIEJO/NUEVO Y TSV) */
 function importBackup(e){
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
   r.onload = async ev => {
+    const text = ev.target.result.trim();
+    if(text.startsWith('{') || text.startsWith('[')){
+      try{
+        const d = JSON.parse(text);
+        
+        // Mapeo flexible de productos antiguos o nuevos
+        let rawProds = d.prods || (Array.isArray(d) ? d : []);
+        if(rawProds.length > 0){
+          const mappedProds = rawProds.map(p => ({
+            id: p.id || ('p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4)),
+            name: p.name || p.nombre || 'Producto importado',
+            material: (p.material || 'pla').toLowerCase(),
+            weight: parseFloat(p.weight || p.peso) || 0,
+            time: parseFloat(p.time || p.tiempo) || 0,
+            qty: parseInt(p.qty || p.piezas) || 1,
+            bag_type: p.bagType || p.bag_type || 'none',
+            bags: parseInt(p.bags) || 0,
+            extra_cost: parseFloat(p.extraCost || p.extra_cost) || 0,
+            extra_qty: parseInt(p.extraQty || p.extra_qty) || 0,
+            link: p.link || ''
+          }));
+          await _supabase.from('productos').upsert(mappedProds);
+        }
+
+        if(d.quoteDocs || d.cotizaciones){
+          let rawQuotes = d.quoteDocs || d.cotizaciones;
+          const mappedQuotes = rawQuotes.map(q => ({
+            id: q.id || ('q_' + Date.now()),
+            numero: q.numero || '0000001',
+            fecha: q.fecha || todayStr(),
+            cliente: q.cliente || 'Cliente',
+            contacto: q.contacto || '',
+            proyecto: q.proyecto || '',
+            items: q.items || [],
+            fotos: q.fotos || [],
+            pay_nombre: q.payNombre || q.pay_nombre || 'Israel Reyes García',
+            pay_cuenta: q.payCuenta || q.pay_cuenta || '638180010190702419',
+            pay_banco: q.payBanco || q.pay_banco || 'NU',
+            contact_email: q.contactEmail || q.contact_email || 'seisprintlab@gmail.com',
+            contact_phone: q.contactPhone || q.contact_phone || '5657 82 2087'
+          }));
+          await _supabase.from('cotizaciones').upsert(mappedQuotes);
+        }
+
+        if(d.filaments || d.filamentos){
+          await _supabase.from('filamentos').upsert(d.filaments || d.filamentos);
+        }
+
+        if(d.rates){
+          R = {...DR, ...d.rates};
+          loadRatesToUI();
+          try{ localStorage.setItem('mxseis_rates', JSON.stringify(R)); }catch{}
+        }
+
+        await loadInitialData();
+        toast('✓ Respaldo importado y sincronizado', 'ok');
+        return;
+      }catch(err){ console.error(err); }
+    }
+
+    // Procesamiento si es un archivo TSV
     try {
-      const d = JSON.parse(ev.target.result);
-      if(d.prods) await _supabase.from('productos').upsert(d.prods.map(p=>({id:p.id,name:p.name,material:p.material,weight:p.weight,time:p.time,qty:p.qty,bag_type:p.bagType,bags:p.bags,extra_cost:p.extraCost,extra_qty:p.extraQty,link:p.link})));
-      if(d.quoteDocs) await _supabase.from('cotizaciones').upsert(d.quoteDocs.map(q=>({id:q.id,numero:q.numero,fecha:q.fecha,cliente:q.cliente,contacto:q.contacto,proyecto:q.proyecto,items:q.items,fotos:q.fotos,pay_nombre:q.payNombre,pay_cuenta:q.payCuenta,pay_banco:q.payBanco,contact_email:q.contactEmail,contact_phone:q.contactPhone})));
-      if(d.filaments) await _supabase.from('filamentos').upsert(d.filaments);
-      if(d.rates){ R = {...DR, ...d.rates}; loadRatesToUI(); try{localStorage.setItem('mxseis_rates', JSON.stringify(R));}catch{} }
-      await loadInitialData();
-      toast('✓ Importado con éxito', 'ok');
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      let imported = [];
+      for(let i = 1; i < lines.length; i++){
+        const cols = lines[i].split('\t').map(c => c.trim());
+        if(cols.length >= 2 && cols[0]){
+          imported.push({
+            id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            name: cols[0], material: cols[1] ? cols[1].toLowerCase() : 'pla',
+            weight: parseFloat(cols[2]) || 0, time: parseFloat(cols[3]) || 0,
+            qty: parseInt(cols[4]) || 1, bag_type: 'none', bags: 0, extra_cost: 0, extra_qty: 0,
+            link: (cols[10] || cols[cols.length-1] || '').startsWith('http') ? (cols[10] || cols[cols.length-1]) : ''
+          });
+        }
+      }
+      if(imported.length){
+        await _supabase.from('productos').upsert(imported);
+        await fetchProductos();
+        toast(`✓ Importados ${imported.length} productos TSV`, 'ok');
+      }
     } catch(err){ toast('Error al procesar archivo', 'err'); }
   };
   r.readAsText(f);
