@@ -31,8 +31,9 @@ body{background:var(--negro);color:var(--hueso);font-family:var(--ff-body);font-
 .tb-btn.ghost:hover{border-color:var(--laton);color:var(--hueso)}
 .tb-btn.primary{background:var(--laton);color:var(--negro)}
 
-/* NAVEGACIÓN DE 4 PESTAÑAS */
-.nav-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 20px;gap:16px;position:sticky;top:54px;z-index:90;overflow-x:auto}
+/* NAVEGACIÓN SIN SCROLLBAR VISIBLE */
+.nav-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 20px;gap:16px;position:sticky;top:54px;z-index:90;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.nav-tabs::-webkit-scrollbar{display:none}
 .ntab{font-family:var(--ff-disp);font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:12px 0;cursor:pointer;color:var(--ceniza);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;white-space:nowrap}
 .ntab:hover{color:var(--hueso)}
 .ntab.act{color:var(--laton);border-bottom-color:var(--laton)}
@@ -490,7 +491,7 @@ select option{background:#0a0a0a}
 // ── CONFIGURACIÓN SUPABASE ────────────────────────────────
 const SUPABASE_URL = 'https://xygubdfolvrkfbbqmyjb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QlhduxEElequeTlB3D3E9Q_OIHlxIJ9';
-const _supabase = supabase.createClient(https://xygubdfolvrkfbbqmyjb.supabase.co, sb_publishable_QlhduxEElequeTlB3D3E9Q_OIHlxIJ9);
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DR = {pla:0.40, petg:0.45, tpu:0.65, asa:0.55, abs:0.45, elec:0.15, time:6.60, fix:20, bag:1.50, margin:35, term:4.06, mfact:1.20};
 let R = {...DR};
@@ -570,24 +571,35 @@ async function fetchFilamentos() {
   }
 }
 
+/* NAVEGACIÓN ENTRE PESTAÑAS ROBUSTA */
 function switchTab(tab){
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('act'));
-  document.querySelectorAll('.ntab').forEach(n => n.classList.remove('act'));
-  if(tab==='quoter'){
-    document.getElementById('v-quoter').classList.add('act');
-    document.querySelectorAll('.ntab')[0].classList.add('act');
-  } else if(tab==='quoteDoc'){
-    document.getElementById('v-quoteDoc').classList.add('act');
-    document.querySelectorAll('.ntab')[1].classList.add('act');
+  const views = {
+    quoter: document.getElementById('v-quoter'),
+    quoteDoc: document.getElementById('v-quoteDoc'),
+    filaments: document.getElementById('v-filaments'),
+    rates: document.getElementById('v-rates')
+  };
+  const tabs = document.querySelectorAll('.ntab');
+
+  Object.values(views).forEach(v => { if(v) v.classList.remove('act'); });
+  tabs.forEach(t => t.classList.remove('act'));
+
+  if(tab==='quoter' && views.quoter){
+    views.quoter.classList.add('act');
+    tabs[0].classList.add('act');
+    calc();
+  } else if(tab==='quoteDoc' && views.quoteDoc){
+    views.quoteDoc.classList.add('act');
+    tabs[1].classList.add('act');
     renderDocItems();
     renderPhotos();
-  } else if(tab==='filaments'){
-    document.getElementById('v-filaments').classList.add('act');
-    document.querySelectorAll('.ntab')[2].classList.add('act');
+  } else if(tab==='filaments' && views.filaments){
+    views.filaments.classList.add('act');
+    tabs[2].classList.add('act');
     renderFilaments();
-  } else if(tab==='rates'){
-    document.getElementById('v-rates').classList.add('act');
-    document.querySelectorAll('.ntab')[3].classList.add('act');
+  } else if(tab==='rates' && views.rates){
+    views.rates.classList.add('act');
+    tabs[3].classList.add('act');
     loadRatesToUI();
   }
 }
@@ -618,21 +630,21 @@ function resetRates(){
 
 function compute(p){
   const w = p.weight||0, t = p.time||0, mat = p.material||'pla', q = p.qty||1;
-  const rateMat = R[mat.toLowerCase()] !== undefined ? R[mat.toLowerCase()] : DR.pla;
+  const rateMat = (R[mat.toLowerCase()] !== undefined && !isNaN(R[mat.toLowerCase()])) ? R[mat.toLowerCase()] : DR.pla;
   const fil = w * rateMat;
-  const elec = t * (R.elec !== undefined ? R.elec : DR.elec);
-  const tm = t * (R.time !== undefined ? R.time : DR.time);
-  const fx = R.fix !== undefined ? R.fix : DR.fix;
-  const bagP = p.bagType==='transparent' ? (R.bag !== undefined ? R.bag : DR.bag) : p.bagType==='craft' ? 2 : 0;
+  const elec = t * ((R.elec !== undefined && !isNaN(R.elec)) ? R.elec : DR.elec);
+  const tm = t * ((R.time !== undefined && !isNaN(R.time)) ? R.time : DR.time);
+  const fx = (R.fix !== undefined && !isNaN(R.fix)) ? R.fix : DR.fix;
+  const bagP = p.bagType==='transparent' ? ((R.bag !== undefined && !isNaN(R.bag)) ? R.bag : DR.bag) : p.bagType==='craft' ? 2 : 0;
   const bagT = bagP * (p.bags||0);
   const extT = (p.extraCost||0) * (p.extraQty||0);
   
   const sub = fil + elec + tm + fx + bagT + extT;
   const cpp = q > 0 ? sub / q : 0;
   
-  const marginVal = R.margin !== undefined ? R.margin : DR.margin;
-  const termVal = R.term !== undefined ? R.term : DR.term;
-  const mfactVal = R.mfact !== undefined ? R.mfact : DR.mfact;
+  const marginVal = (R.margin !== undefined && !isNaN(R.margin)) ? R.margin : DR.margin;
+  const termVal = (R.term !== undefined && !isNaN(R.term)) ? R.term : DR.term;
+  const mfactVal = (R.mfact !== undefined && !isNaN(R.mfact)) ? R.mfact : DR.mfact;
 
   const prof = sub * (marginVal/100);
   const withP = sub + prof;
@@ -649,16 +661,16 @@ function compute(p){
 
 function getFormProd(){
   return {
-    name: document.getElementById('q-name').value.trim(),
-    material: document.getElementById('q-mat').value,
-    weight: parseFloat(document.getElementById('q-w').value)||0,
-    time: parseFloat(document.getElementById('q-t').value)||0,
-    qty: parseInt(document.getElementById('q-qty').value)||1,
-    bagType: document.getElementById('q-bag').value,
-    bags: parseInt(document.getElementById('q-bags').value)||0,
-    extraCost: parseFloat(document.getElementById('q-ec').value)||0,
-    extraQty: parseInt(document.getElementById('q-eq').value)||0,
-    link: document.getElementById('q-link').value.trim()
+    name: (document.getElementById('q-name')?.value || '').trim(),
+    material: document.getElementById('q-mat')?.value || 'pla',
+    weight: parseFloat(document.getElementById('q-w')?.value)||0,
+    time: parseFloat(document.getElementById('q-t')?.value)||0,
+    qty: parseInt(document.getElementById('q-qty')?.value)||1,
+    bagType: document.getElementById('q-bag')?.value || 'none',
+    bags: parseInt(document.getElementById('q-bags')?.value)||0,
+    extraCost: parseFloat(document.getElementById('q-ec')?.value)||0,
+    extraQty: parseInt(document.getElementById('q-eq')?.value)||0,
+    link: (document.getElementById('q-link')?.value || '').trim()
   };
 }
 
@@ -667,26 +679,28 @@ function calc(){
   const r = compute(p);
   const f = n => '$' + (isNaN(n) ? '0.00' : n.toFixed(2));
   
-  document.getElementById('r-fil').textContent = f(r.fil);
-  document.getElementById('r-elec').textContent = f(r.elec);
-  document.getElementById('r-time').textContent = f(r.tm);
-  document.getElementById('r-fix').textContent = f(r.fx);
-  document.getElementById('r-bags').textContent = f(r.bagT);
-  document.getElementById('r-ext').textContent = f(r.extT);
-  document.getElementById('r-sub').textContent = f(r.sub);
-  document.getElementById('r-cpp').textContent = f(r.cpp);
+  if(document.getElementById('r-fil')) document.getElementById('r-fil').textContent = f(r.fil);
+  if(document.getElementById('r-elec')) document.getElementById('r-elec').textContent = f(r.elec);
+  if(document.getElementById('r-time')) document.getElementById('r-time').textContent = f(r.tm);
+  if(document.getElementById('r-fix')) document.getElementById('r-fix').textContent = f(r.fx);
+  if(document.getElementById('r-bags')) document.getElementById('r-bags').textContent = f(r.bagT);
+  if(document.getElementById('r-ext')) document.getElementById('r-ext').textContent = f(r.extT);
+  if(document.getElementById('r-sub')) document.getElementById('r-sub').textContent = f(r.sub);
+  if(document.getElementById('r-cpp')) document.getElementById('r-cpp').textContent = f(r.cpp);
 
   if(r.sub > 0){
-    document.getElementById('r-min').textContent = f(r.minPP);
-    document.getElementById('r-mid').textContent = f(r.midPP);
-    document.getElementById('r-max').textContent = f(r.maxPP);
+    if(document.getElementById('r-min')) document.getElementById('r-min').textContent = f(r.minPP);
+    if(document.getElementById('r-mid')) document.getElementById('r-mid').textContent = f(r.midPP);
+    if(document.getElementById('r-max')) document.getElementById('r-max').textContent = f(r.maxPP);
     const mb = document.getElementById('mbadge'), m = r.realM;
-    if(m>=40){mb.className='mbadge';mb.style.background='rgba(111,207,151,.15)';mb.style.color='var(--green)';mb.textContent=`Margen ${m.toFixed(1)}% ✓`;}
-    else if(m>=28){mb.className='mbadge';mb.style.background='rgba(242,153,74,.15)';mb.style.color='var(--amber)';mb.textContent=`Margen ${m.toFixed(1)}% ↗`;}
-    else{mb.className='mbadge';mb.style.background='rgba(235,87,87,.15)';mb.style.color='var(--red)';mb.textContent=`Margen ${m.toFixed(1)}% ↓`;}
+    if(mb){
+      if(m>=40){mb.className='mbadge';mb.style.background='rgba(111,207,151,.15)';mb.style.color='var(--green)';mb.textContent=`Margen ${m.toFixed(1)}% ✓`;}
+      else if(m>=28){mb.className='mbadge';mb.style.background='rgba(242,153,74,.15)';mb.style.color='var(--amber)';mb.textContent=`Margen ${m.toFixed(1)}% ↗`;}
+      else{mb.className='mbadge';mb.style.background='rgba(235,87,87,.15)';mb.style.color='var(--red)';mb.textContent=`Margen ${m.toFixed(1)}% ↓`;}
+    }
   } else {
-    ['r-min','r-mid','r-max'].forEach(x => document.getElementById(x).textContent = '$—');
-    document.getElementById('mbadge').textContent = '—';
+    ['r-min','r-mid','r-max'].forEach(x => { if(document.getElementById(x)) document.getElementById(x).textContent = '$—'; });
+    if(document.getElementById('mbadge')) document.getElementById('mbadge').textContent = '—';
   }
 }
 
@@ -729,7 +743,7 @@ function loadProd(id){
 
 function newProd(){
   curProdId = null;
-  ['q-name','q-w','q-t','q-link','q-ec'].forEach(x => document.getElementById(x).value = '');
+  ['q-name','q-w','q-t','q-link','q-ec'].forEach(x => { if(document.getElementById(x)) document.getElementById(x).value = ''; });
   document.getElementById('q-mat').value = 'pla';
   document.getElementById('q-qty').value = '1';
   document.getElementById('q-bag').value = 'none';
@@ -749,6 +763,7 @@ async function deleteProd(){
 
 function renderProdList(filter=''){
   const list = document.getElementById('prodList');
+  if(!list) return;
   const fl = prods.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
   if(!fl.length){ list.innerHTML = '<div class="sb-empty">Sin productos</div>'; return; }
   list.innerHTML = fl.map(p => {
@@ -813,7 +828,7 @@ function objToQuote(q){
   document.getElementById('payCuenta').textContent = q.payCuenta || '638180010190702419';
   document.getElementById('payBanco').textContent = q.payBanco || 'NU';
   document.getElementById('contactEmail').textContent = q.contactEmail || 'seisprintlab@gmail.com';
-  document.getElementById('contactPhone').textContent = q.contactPhone || '5657 82 2087';
+  document.getElementById('contactPhone').textContent = q.contactPhone || '5523 19 2113';
   
   docItems = q.items?.length ? JSON.parse(JSON.stringify(q.items)) : [{desc:'', precio:0, cantidad:1}];
   currentPhotos = q.fotos?.length ? JSON.parse(JSON.stringify(q.fotos)) : [{src:'', x:50, y:50, size:'m'}, {src:'', x:50, y:50, size:'m'}];
@@ -850,7 +865,7 @@ function newQuoteDoc(){
     items: [{desc:'', precio:0, cantidad:1}],
     fotos: [{src:'', x:50, y:50, size:'m'}, {src:'', x:50, y:50, size:'m'}],
     payNombre: 'Israel Reyes García', payCuenta: '638180010190702419', payBanco: 'NU',
-    contactEmail: 'seisprintlab@gmail.com', contactPhone: '5657 82 2087'
+    contactEmail: 'seisprintlab@gmail.com', contactPhone: '5523 19 2113'
   };
   quoteDocs.unshift(q);
   objToQuote(q);
@@ -877,6 +892,7 @@ async function deleteCurrentQuoteDoc(){
 
 function renderQuoteListSidebar(){
   const list = document.getElementById('quoteListSidebar');
+  if(!list) return;
   if(!quoteDocs.length){ list.innerHTML = '<div class="sb-empty">Sin cotizaciones</div>'; return; }
   list.innerHTML = quoteDocs.map(q => {
     const total = (q.items||[]).reduce((s,i) => s + (i.precio||0)*(i.cantidad||0), 0);
@@ -890,6 +906,7 @@ function renderQuoteListSidebar(){
 
 function renderDocItems(){
   const tbody = document.getElementById('itemsBody');
+  if(!tbody) return;
   tbody.innerHTML = '';
   docItems.forEach((item, i) => {
     const total = (item.precio || 0) * (item.cantidad || 0);
@@ -908,7 +925,7 @@ function renderDocItems(){
 
 function calcGrandTotal(){
   const total = docItems.reduce((s, i) => s + (i.precio||0)*(i.cantidad||0), 0);
-  document.getElementById('grandTotal').textContent = '$' + total.toFixed(2);
+  if(document.getElementById('grandTotal')) document.getElementById('grandTotal').textContent = '$' + total.toFixed(2);
 }
 
 function addEmptyRow(){ docItems.push({desc:'', precio:0, cantidad:1}); renderDocItems(); }
@@ -916,6 +933,7 @@ function removeDocRow(i){ if(docItems.length <= 1){ toast('Mínimo una línea','
 
 function renderPhotos(){
   const sec = document.getElementById('photosSection');
+  if(!sec) return;
   sec.innerHTML = '';
   const SZ = {s:60, m:90, l:120};
   
@@ -987,6 +1005,7 @@ function setPhotoSize(e, idx, sz){ e.stopPropagation(); currentPhotos[idx].size 
 
 function renderFilaments(){
   const grid = document.getElementById('filGrid');
+  if(!grid) return;
   grid.innerHTML = filaments.map(f => `
     <div class="fil-card">
       <div class="fil-circle" onclick="triggerFilUpload('${f.id}')">
@@ -1049,7 +1068,6 @@ function exportBackup(){
 
 function triggerImport(){ document.getElementById('importFile').click(); }
 
-/* IMPORTADOR ADAPTATIVO (JSON VIEJO/NUEVO Y TSV) */
 function importBackup(e){
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
@@ -1059,7 +1077,6 @@ function importBackup(e){
       try{
         const d = JSON.parse(text);
         
-        // Mapeo flexible de productos antiguos o nuevos
         let rawProds = d.prods || (Array.isArray(d) ? d : []);
         if(rawProds.length > 0){
           const mappedProds = rawProds.map(p => ({
@@ -1093,7 +1110,7 @@ function importBackup(e){
             pay_cuenta: q.payCuenta || q.pay_cuenta || '638180010190702419',
             pay_banco: q.payBanco || q.pay_banco || 'NU',
             contact_email: q.contactEmail || q.contact_email || 'seisprintlab@gmail.com',
-            contact_phone: q.contactPhone || q.contact_phone || '5657 82 2087'
+            contact_phone: q.contactPhone || q.contact_phone || '5523 19 2113'
           }));
           await _supabase.from('cotizaciones').upsert(mappedQuotes);
         }
@@ -1114,7 +1131,6 @@ function importBackup(e){
       }catch(err){ console.error(err); }
     }
 
-    // Procesamiento si es un archivo TSV
     try {
       const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       let imported = [];
@@ -1144,6 +1160,7 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 let _tt;
 function toast(msg, type='ok'){
   const el = document.getElementById('toast');
+  if(!el) return;
   el.textContent = msg;
   el.className = 'toast ' + type + ' show';
   clearTimeout(_tt);
